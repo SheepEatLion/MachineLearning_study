@@ -1,0 +1,42 @@
+
+##### XOR 연산을 로지스틱으로 구현 가능한가?
+import tensorflow as tf
+
+# 1. training data set
+x_data = [[0,0], [0,1], [1,0], [1,1]]
+y_data = [[0], [1], [1], [0]]
+
+# placeholder
+X = tf.placeholder(shape=[None, 2], dtype=tf.float32)
+Y = tf.placeholder(shape=[None, 1], dtype=tf.float32)
+
+# Weight bias
+W = tf.Variable(tf.random_normal([2,1]), name="weight")
+b = tf.Variable(tf.random_normal([1]), name="bias")
+
+# Hypothesis
+logit = tf.matmul(X, W) + b
+H = tf.sigmoid(logit)
+
+# cost function
+cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logit, labels=Y))
+
+# train
+train = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(cost)
+
+# session
+sess =  tf.Session()
+sess.run(tf.global_variables_initializer())
+
+# 학습
+for step in range(3000):
+    tmp_train, cost_val = sess.run([train, cost], feed_dict={X:x_data, Y:y_data})
+    if step % 300 == 0:
+        print("cost 값은 : {}".format(cost_val))
+
+# 정확도 측정 ## 로지스틱에서 정확도를 측정하는 방법
+predict = tf.cast(H > 0.5, dtype=tf.float32)
+correct = tf.equal(predict, Y)
+accuracy = tf.reduce_mean(tf.cast(correct, dtype=tf.float32))
+
+print(sess.run(accuracy, feed_dict={X:x_data, Y:y_data}))
